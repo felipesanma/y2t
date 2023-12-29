@@ -14,7 +14,7 @@ class YT2text:
         try:
             transcript = YouTubeTranscriptApi.get_transcript(id, languages=[lan])
             return transcript
-        except NoTranscriptFound:
+        except:
             return None
 
     def get_videos_ids_from_playlist_id(self, *, playlist_id: str):
