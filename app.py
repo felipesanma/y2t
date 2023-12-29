@@ -65,7 +65,7 @@ if st.session_state["button1"]:
             st.error("Something went grong...")
             st.exception(e)
             st.stop()
-
+    st.snow()
     row2_spacer1, row2_1, row2_spacer2, row2_2, row2_spacer3 = st.columns(
         (0.3, 1.5, 0.3, 1.5, 0.3)
     )
@@ -98,6 +98,42 @@ if st.session_state["button1"]:
     if st.download_button(
         "Download JSON",
         json.dumps(st.session_state.video_content),
+        file_name=f"{st.session_state.video_id}.json",
+    ):
+        st.success("Thanks for downloading!")
+    st.json(st.session_state.video_content)
+
+    with st.spinner("Getting Transcription using Whisper...."):
+        try:
+            st.session_state.video_content_whisper = (
+                YT2text().extract_content_from_youtube_video_without_transcription(
+                    video_id=st.session_state.video_id
+                )
+            )
+        except Exception as e:
+            st.error("Something went grong...")
+            st.exception(e)
+            st.stop()
+    st.balloons()
+
+    st.subheader(":blue[Transcription] with Whisper :sunglasses:", divider="rainbow")
+
+    with stylable_container(
+        "codeblock",
+        """
+    code {
+        white-space: pre-wrap !important;
+    }
+    """,
+    ):
+        st.code(st.session_state.video_content_whisper["transcription"])
+
+    st.subheader(
+        "Youtube Video Information as JSON object using Whisper", divider="blue"
+    )
+    if st.download_button(
+        "Download JSON",
+        json.dumps(st.session_state.video_content_whisper),
         file_name=f"{st.session_state.video_id}.json",
     ):
         st.success("Thanks for downloading!")
