@@ -1,4 +1,5 @@
 pytube
 tinytag
-whisper
+git+https://github.com/openai/whisper.git 
 youtube_transcript_api
+youtube-search-python

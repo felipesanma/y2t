@@ -100,7 +100,7 @@ class YT2text:
             print("ERROR: youtube video not converted to audio")
             return False
 
-        audio_content = Audio2text.extract(audio_file=f"{video_id}.mp3")
+        audio_content = Audio2text().extract(audio_file=f"{video_id}.mp3")
         os.remove(f"{video_id}.mp3")
         video_info["transcription"] = audio_content["transcription"]
         video_info["language"] = audio_content["language"]
@@ -110,9 +110,9 @@ class YT2text:
 
         return video_info
 
-    def extract(self, *, video_id: str):
+    def extract(self, *, video_id: str, language: str = "es"):
         video_info = self.extract_content_from_youtube_video_with_transcription(
-            video_id=video_id
+            video_id=video_id, language=language
         )
         if video_info["transcription"] is not None:
             return video_info
