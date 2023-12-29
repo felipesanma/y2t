@@ -37,36 +37,10 @@ with st.sidebar:
 
 # ROW 1 ------------------------------------------------------------------------
 
-Title_html = """
-    <style>
-        .title h1{
-          user-select: none;
-          font-size: 43px;
-          color: white;
-          background: repeating-linear-gradient(-45deg, red 0%, yellow 7.14%, rgb(0,255,0) 14.28%, rgb(0,255,255) 21.4%, cyan 28.56%, blue 35.7%, magenta 42.84%, red 50%);
-          background-size: 300vw 300vw;
-          -webkit-text-fill-color: transparent;
-          -webkit-background-clip: text;
-          animation: slide 10s linear infinite forwards;
-        }
-        @keyframes slide {
-          0%{
-            background-position-x: 0%;
-          }
-          100%{
-            background-position-x: 600vw;
-          }
-        }
-    </style> 
-    
-    <div class="title">
-        <h1>Transcription from Youtube Videos</h1>
-    </div>
-    """
+st.header("Transcription from Youtube Videos")
 st.markdown(
     "_Get transcripts from videos even if there is no automatically generated from youtube_"
 )
-components.html(Title_html)
 
 youtube_url = st.text_input(
     "Youtube URL, sample: https://www.youtube.com/watch?v=ojQdVM-nbDg",
