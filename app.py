@@ -107,7 +107,8 @@ if st.session_state["button1"]:
         try:
             st.session_state.video_content_whisper = (
                 YT2text().extract_content_from_youtube_video_without_transcription(
-                    video_id=st.session_state.video_id
+                    video_id=st.session_state.video_id,
+                    video_info=st.session_state.video_content,
                 )
             )
         except Exception as e:
