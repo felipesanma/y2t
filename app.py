@@ -58,8 +58,10 @@ if st.session_state["button1"]:
     with st.spinner("Getting Transcription...."):
         try:
             st.session_state.video_id = youtube_url.split("=")[-1]
-            st.session_state.video_content = YT2text().extract(
-                video_id=st.session_state.video_id
+            st.session_state.video_content = (
+                YT2text().extract_content_from_youtube_video_with_transcription(
+                    video_id=st.session_state.video_id
+                )
             )
         except Exception as e:
             st.error("Something went grong...")
