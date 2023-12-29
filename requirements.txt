@@ -3,5 +3,5 @@ tinytag
 git+https://github.com/openai/whisper.git 
 youtube_transcript_api
 youtube-search-python
-streamlit-1.29.0
+streamlit
 streamlit-extras
