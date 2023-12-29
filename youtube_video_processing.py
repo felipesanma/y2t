@@ -66,7 +66,9 @@ class YT2text:
                 start_time = text["start"]
         return mapping
 
-    def extract(self, *, video_id: str, language: str = "es", max_length: int = 2000):
+    def extract_content_from_youtube_video_with_transcription(
+        self, *, video_id: str, language: str = "es", max_length: int = 2000
+    ):
         video_info = Video.getInfo(video_id, mode=ResultMode.json)
         video_mapping = {
             "id": video_info["id"],
@@ -90,7 +92,7 @@ class YT2text:
 
         return video_mapping
 
-    def extract_content_from_youtube_video_wuthout_transcript(
+    def extract_content_from_youtube_video_without_transcription(
         self, *, video_id: str, video_info: dict
     ):
         dowloadeed_audio = self.download_youtube_video_to_audio(video_id=video_id)
@@ -107,3 +109,14 @@ class YT2text:
         ]
 
         return video_info
+
+    def extract(self, *, video_id: str):
+        video_info = self.extract_content_from_youtube_video_with_transcription(
+            video_id=video_id
+        )
+        if video_info["transcription"] is not None:
+            return video_info
+        video_content = self.extract_content_from_youtube_video_without_transcription(
+            video_id=video_id, video_info=video_info
+        )
+        return video_content

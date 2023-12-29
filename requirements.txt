@@ -1,0 +1,4 @@
+pytube
+tinytag
+whisper
+youtube_transcript_api
