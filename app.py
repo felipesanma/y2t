@@ -21,7 +21,7 @@ with st.sidebar:
     st.markdown(
         """
     ## About
-    This app is an Youtube Video transcriptor, built using:
+    This app is a Youtube Video transcriptor, built using:
     - [Streamlit](https://streamlit.io/)
     - [Whisper](https://openai.com/research/whisper)
     - youtube_transcript_api
