@@ -67,7 +67,7 @@ if st.session_state["button1"]:
     print(st.session_state.video_content)
     st.snow()
     row2_spacer1, row2_1, row2_spacer2, row2_2, row2_spacer3 = st.columns(
-        (0.3, 1.5, 0.3, 1.5, 0.3)
+        (0.3, 1.5, 0.3, 3.5, 0.3)
     )
     with row2_1:
         st.video(youtube_url)
@@ -77,13 +77,6 @@ if st.session_state["button1"]:
             st.session_state.video_content_is_dict = True
             st.header(st.session_state.video_content["title"])
             st.write(st.session_state.video_content["description"])
-            if st.download_button(
-                "Download Transcription",
-                st.session_state.video_content["transcription"],
-                file_name=f"{st.session_state.video_id}_transcription.txt",
-                key="3",
-            ):
-                st.success("Thanks for downloading!")
         else:
             st.session_state.video_content_is_dict = False
     st.subheader(":blue[Transcription] :sunglasses:", divider="rainbow")
@@ -97,6 +90,13 @@ if st.session_state["button1"]:
     """,
     ):
         if st.session_state.video_content_is_dict:
+            if st.download_button(
+                "Download Transcription",
+                st.session_state.video_content["transcription"],
+                file_name=f"{st.session_state.video_id}_transcription.txt",
+                key="3",
+            ):
+                st.success("Thanks for downloading!")
             st.code(st.session_state.video_content["transcription"])
         else:
             st.code("No transcription found")
@@ -160,5 +160,5 @@ if st.session_state["button1"]:
             st.json(st.session_state.video_content)
         else:
             st.error(
-                "The video is age restricted, and can't be accessed without logging in."
+                "The video is age restricted, and can't be accessed without logging in. hint: try getting logged in and refresh the app"
             )
