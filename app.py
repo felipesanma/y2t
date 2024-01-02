@@ -105,6 +105,7 @@ if st.session_state["button1"]:
             "Download JSON",
             json.dumps(st.session_state.video_content),
             file_name=f"{st.session_state.video_id}.json",
+            key="1",
         ):
             st.success("Thanks for downloading!")
         st.json(st.session_state.video_content)
@@ -145,6 +146,7 @@ if st.session_state["button1"]:
                 "Download JSON",
                 json.dumps(st.session_state.video_content_whisper),
                 file_name=f"{st.session_state.video_id}.json",
+                key="2",
             ):
                 st.success("Thanks for downloading!")
             st.json(st.session_state.video_content)
