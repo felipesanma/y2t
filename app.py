@@ -81,6 +81,7 @@ if st.session_state["button1"]:
                 "Download Transcription",
                 st.session_state.video_content["transcription"],
                 file_name=f"{st.session_state.video_id}_transcription.txt",
+                key="3",
             ):
                 st.success("Thanks for downloading!")
         else:
@@ -129,6 +130,13 @@ if st.session_state["button1"]:
             ":blue[Transcription] with Whisper :sunglasses:", divider="rainbow"
         )
         if type(st.session_state.video_content_whisper) is dict:
+            if st.download_button(
+                "Download Transcription",
+                st.session_state.video_content["transcription"],
+                file_name=f"{st.session_state.video_id}_transcription.txt",
+                key="4",
+            ):
+                st.success("Thanks for downloading!")
             with stylable_container(
                 "codeblock",
                 """
