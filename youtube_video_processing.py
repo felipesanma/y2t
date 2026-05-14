@@ -20,6 +20,14 @@ class AudioDownloadError(YT2TextError):
     pass
 
 
+def youtube_dl_options(**options):
+    return {
+        "quiet": True,
+        "no_warnings": True,
+        **options,
+    }
+
+
 class YT2text:
     def __init__(self) -> None:
         pass
@@ -46,11 +54,10 @@ class YT2text:
 
     def get_videos_ids_from_playlist_id(self, *, playlist_id: str):
         playlist_link = f"https://www.youtube.com/playlist?list={playlist_id}"
-        ydl_opts = {
-            "extract_flat": True,
-            "quiet": True,
-            "noplaylist": False,
-        }
+        ydl_opts = youtube_dl_options(
+            extract_flat=True,
+            noplaylist=False,
+        )
 
         try:
             with YoutubeDL(ydl_opts) as ydl:
@@ -62,12 +69,11 @@ class YT2text:
 
     def download_youtube_video_to_audio(self, *, video_id: str, output_dir: str):
         video_link = f"https://www.youtube.com/watch?v={video_id}"
-        ydl_opts = {
-            "format": "bestaudio/best",
-            "outtmpl": os.path.join(output_dir, f"{video_id}.%(ext)s"),
-            "quiet": True,
-            "noplaylist": True,
-        }
+        ydl_opts = youtube_dl_options(
+            format="bestaudio/best",
+            outtmpl=os.path.join(output_dir, f"{video_id}.%(ext)s"),
+            noplaylist=True,
+        )
 
         with YoutubeDL(ydl_opts) as ydl:
             video_info = ydl.extract_info(video_link, download=True)
@@ -75,11 +81,10 @@ class YT2text:
 
     def get_youtube_video_info(self, *, video_id: str):
         video_link = f"https://www.youtube.com/watch?v={video_id}"
-        ydl_opts = {
-            "quiet": True,
-            "noplaylist": True,
-            "skip_download": True,
-        }
+        ydl_opts = youtube_dl_options(
+            noplaylist=True,
+            skip_download=True,
+        )
 
         try:
             with YoutubeDL(ydl_opts) as ydl:
