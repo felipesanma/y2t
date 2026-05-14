@@ -1,8 +1,9 @@
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import NoTranscriptFound
-from youtubesearchpython import Video, ResultMode
-from pytube import YouTube, Playlist
 import os
+import tempfile
+
+from youtube_transcript_api import YouTubeTranscriptApi
+from yt_dlp import YoutubeDL
+
 from audio_processing import Audio2text
 
 
@@ -12,33 +13,66 @@ class YT2text:
 
     def generate_transcript(self, *, id, lan="en"):
         try:
-            transcript = YouTubeTranscriptApi.get_transcript(id, languages=[lan])
+            languages = [lan]
+            if lan != "en":
+                languages.append("en")
+
+            transcript = YouTubeTranscriptApi().fetch(id, languages=languages)
+            if hasattr(transcript, "to_raw_data"):
+                return transcript.to_raw_data()
+
             return transcript
-        except:
+        except Exception:
             return None
 
     def get_videos_ids_from_playlist_id(self, *, playlist_id: str):
         playlist_link = f"https://www.youtube.com/playlist?list={playlist_id}"
+        ydl_opts = {
+            "extract_flat": True,
+            "quiet": True,
+            "noplaylist": False,
+        }
 
-        video_links = Playlist(playlist_link).video_urls
+        with YoutubeDL(ydl_opts) as ydl:
+            playlist = ydl.extract_info(playlist_link, download=False)
 
-        return [url.split("=")[1] for url in video_links]
+        return [entry["id"] for entry in playlist.get("entries", []) if entry.get("id")]
 
-    def download_youtube_video_to_audio(self, *, video_id: str):
+    def download_youtube_video_to_audio(self, *, video_id: str, output_dir: str):
         video_link = f"https://www.youtube.com/watch?v={video_id}"
+        ydl_opts = {
+            "format": "bestaudio/best",
+            "outtmpl": os.path.join(output_dir, f"{video_id}.%(ext)s"),
+            "quiet": True,
+            "noplaylist": True,
+        }
 
         try:
-            video = YouTube(video_link)  # .streams.first().download(video_id)
-            # filtering the audio. File extension can be mp4/webm
-            # You can see all the available streams by print(video.streams)
-            audio = video.streams.filter(only_audio=True)[0]
-            audio.download(filename=f"{video_id}.mp3")
-            return True
+            with YoutubeDL(ydl_opts) as ydl:
+                video_info = ydl.extract_info(video_link, download=True)
+                return ydl.prepare_filename(video_info)
 
         except Exception as e:
             print("Connection Error")
             print(e)
-            return False
+            return None
+
+    def get_youtube_video_info(self, *, video_id: str):
+        video_link = f"https://www.youtube.com/watch?v={video_id}"
+        ydl_opts = {
+            "quiet": True,
+            "noplaylist": True,
+            "skip_download": True,
+        }
+
+        with YoutubeDL(ydl_opts) as ydl:
+            video_info = ydl.extract_info(video_link, download=False)
+
+        return {
+            "id": video_info.get("id", video_id),
+            "title": video_info.get("title", ""),
+            "description": video_info.get("description", ""),
+        }
 
     def get_content_from_transcript(self, *, transcript):
         content = "".join(
@@ -51,7 +85,6 @@ class YT2text:
     ):
         mapping = []
         tmp_text = ""
-        max_length = max_length
         start_time = 0
         for text in transcript:
             tmp_text += f'{text["text"]} '
@@ -64,12 +97,21 @@ class YT2text:
                 mapping.append(tmp_element)
                 tmp_text = ""
                 start_time = text["start"]
+        if tmp_text:
+            mapping.append(
+                {
+                    "content": tmp_text,
+                    "start_time": start_time,
+                    "end_time": transcript[-1]["start"]
+                    + transcript[-1].get("duration", 0),
+                }
+            )
         return mapping
 
     def extract_content_from_youtube_video_with_transcription(
         self, *, video_id: str, language: str = "es", max_length: int = 2000
     ):
-        video_info = Video.getInfo(video_id, mode=ResultMode.json)
+        video_info = self.get_youtube_video_info(video_id=video_id)
         video_mapping = {
             "id": video_info["id"],
             "title": video_info["title"],
@@ -95,13 +137,16 @@ class YT2text:
     def extract_content_from_youtube_video_without_transcription(
         self, *, video_id: str, video_info: dict
     ):
-        dowloadeed_audio = self.download_youtube_video_to_audio(video_id=video_id)
-        if not dowloadeed_audio:
-            print("ERROR: youtube video not converted to audio")
-            return False
+        with tempfile.TemporaryDirectory() as tmpdir:
+            downloaded_audio = self.download_youtube_video_to_audio(
+                video_id=video_id, output_dir=tmpdir
+            )
+            if not downloaded_audio:
+                print("ERROR: youtube video not converted to audio")
+                return False
 
-        audio_content = Audio2text().extract(audio_file=f"{video_id}.mp3")
-        os.remove(f"{video_id}.mp3")
+            audio_content = Audio2text().extract(audio_file=downloaded_audio)
+
         video_info["transcription"] = audio_content["transcription"]
         video_info["language"] = audio_content["language"]
         video_info["timestamp_and_content_mapping"] = audio_content[

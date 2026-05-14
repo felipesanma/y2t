@@ -2,7 +2,26 @@ from youtube_video_processing import YT2text
 import streamlit as st
 from PIL import Image
 import json
-from streamlit_extras.stylable_container import stylable_container
+from urllib.parse import parse_qs, urlparse
+
+
+def get_youtube_video_id(youtube_url: str) -> str | None:
+    parsed_url = urlparse(youtube_url)
+    hostname = parsed_url.hostname or ""
+
+    if hostname.endswith("youtu.be"):
+        return parsed_url.path.lstrip("/") or None
+
+    if "youtube.com" in hostname:
+        if parsed_url.path == "/watch":
+            return parse_qs(parsed_url.query).get("v", [None])[0]
+        if parsed_url.path.startswith("/shorts/") or parsed_url.path.startswith(
+            "/embed/"
+        ):
+            return parsed_url.path.split("/")[2] or None
+
+    return youtube_url.strip() or None
+
 
 # SETUP ------------------------------------------------------------------------
 favicon = Image.open("favicon.ico")
@@ -11,6 +30,16 @@ st.set_page_config(
     page_icon=favicon,
     layout="wide",
     initial_sidebar_state="auto",
+)
+st.markdown(
+    """
+    <style>
+    code {
+        white-space: pre-wrap !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 
@@ -24,8 +53,7 @@ with st.sidebar:
     - [Streamlit](https://streamlit.io/)
     - [Whisper](https://openai.com/research/whisper)
     - youtube_transcript_api
-    - youtubesearchpython
-    - pytube
+    - yt-dlp
     - tinytag
     """
     )
@@ -42,7 +70,7 @@ st.markdown(
 )
 
 youtube_url = st.text_input(
-    "Youtube URL, sample: https://www.youtube.com/watch?v=ojQdVM-nbDg",
+    "Youtube URL, sample: https://www.youtube.com/watch?v=VXFkjxPvqfU",
     key="youtube_url",
 )
 button1 = st.button("Get Transcription")
@@ -55,13 +83,16 @@ if st.session_state["button1"]:
         st.stop()
 
     with st.spinner("Getting Transcription...."):
-        st.session_state.video_id = youtube_url.split("=")[-1]
+        st.session_state.video_id = get_youtube_video_id(youtube_url)
+        if not st.session_state.video_id:
+            st.warning("Youtube URL is not valid")
+            st.stop()
         try:
             st.session_state.video_content = YT2text().extract(
                 video_id=st.session_state.video_id
             )
         except Exception as e:
-            st.error("Something went grong...")
+            st.error("Something went wrong...")
             st.exception(e)
             st.stop()
     print(st.session_state.video_content)
@@ -73,7 +104,7 @@ if st.session_state["button1"]:
         st.video(youtube_url)
 
     with row2_2:
-        if type(st.session_state.video_content) is dict:
+        if isinstance(st.session_state.video_content, dict):
             st.session_state.video_content_is_dict = True
             st.header(st.session_state.video_content["title"])
             st.write(st.session_state.video_content["description"])
@@ -81,25 +112,17 @@ if st.session_state["button1"]:
             st.session_state.video_content_is_dict = False
     st.subheader(":blue[Transcription] :sunglasses:", divider="rainbow")
 
-    with stylable_container(
-        "codeblock",
-        """
-    code {
-        white-space: pre-wrap !important;
-    }
-    """,
-    ):
-        if st.session_state.video_content_is_dict:
-            if st.download_button(
-                "Download Transcription",
-                st.session_state.video_content["transcription"],
-                file_name=f"{st.session_state.video_id}_transcription.txt",
-                key="3",
-            ):
-                st.success("Thanks for downloading!")
-            st.code(st.session_state.video_content["transcription"])
-        else:
-            st.code("No transcription found")
+    if st.session_state.video_content_is_dict:
+        if st.download_button(
+            "Download Transcription",
+            st.session_state.video_content["transcription"],
+            file_name=f"{st.session_state.video_id}_transcription.txt",
+            key="3",
+        ):
+            st.success("Thanks for downloading!")
+        st.code(st.session_state.video_content["transcription"])
+    else:
+        st.code("No transcription found")
     if st.session_state.video_content_is_dict:
         st.subheader("Youtube Video Information as JSON object", divider="blue")
         if st.download_button(
@@ -121,7 +144,7 @@ if st.session_state["button1"]:
                     )
                 )
             except Exception as e:
-                st.error("Something went grong...")
+                st.error("Something went wrong...")
                 st.exception(e)
                 st.stop()
         st.balloons()
@@ -129,23 +152,15 @@ if st.session_state["button1"]:
         st.subheader(
             ":blue[Transcription] with Whisper :sunglasses:", divider="rainbow"
         )
-        if type(st.session_state.video_content_whisper) is dict:
+        if isinstance(st.session_state.video_content_whisper, dict):
             if st.download_button(
                 "Download Transcription",
-                st.session_state.video_content["transcription"],
+                st.session_state.video_content_whisper["transcription"],
                 file_name=f"{st.session_state.video_id}_transcription.txt",
                 key="4",
             ):
                 st.success("Thanks for downloading!")
-            with stylable_container(
-                "codeblock",
-                """
-            code {
-                white-space: pre-wrap !important;
-            }
-            """,
-            ):
-                st.code(st.session_state.video_content_whisper["transcription"])
+            st.code(st.session_state.video_content_whisper["transcription"])
 
             st.subheader(
                 "Youtube Video Information as JSON object using Whisper", divider="blue"
@@ -157,7 +172,7 @@ if st.session_state["button1"]:
                 key="2",
             ):
                 st.success("Thanks for downloading!")
-            st.json(st.session_state.video_content)
+            st.json(st.session_state.video_content_whisper)
         else:
             st.error(
                 "The video is age restricted, and can't be accessed without logging in. hint: try getting logged in and refresh the app"

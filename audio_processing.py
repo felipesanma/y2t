@@ -15,7 +15,6 @@ class Audio2text:
     ):
         mapping = []
         tmp_text = ""
-        max_length = 2000
         start_time = 0
         for text in transcript["segments"]:
             tmp_text += f'{text["text"]} '
@@ -28,6 +27,14 @@ class Audio2text:
                 mapping.append(tmp_element)
                 tmp_text = ""
                 start_time = text["end"]
+        if tmp_text and transcript["segments"]:
+            mapping.append(
+                {
+                    "content": tmp_text,
+                    "start_time": start_time,
+                    "end_time": transcript["segments"][-1]["end"],
+                }
+            )
 
         return mapping
 

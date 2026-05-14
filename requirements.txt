@@ -1,7 +1,5 @@
-pytube
-tinytag
-git+https://github.com/openai/whisper.git 
-youtube_transcript_api
-youtube-search-python
-streamlit
-streamlit-extras
+openai-whisper>=20250625
+streamlit>=1.57.0
+tinytag>=2.2.1
+youtube-transcript-api>=1.2.4
+yt-dlp>=2026.3.17
