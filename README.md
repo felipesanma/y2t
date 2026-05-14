@@ -22,9 +22,11 @@ Whisper.
 
 - Python 3.10 or newer
 - `ffmpeg` available on the system path
+- `deno` available on the system path for more reliable YouTube extraction
 - Internet access to YouTube and to download the Whisper model on first use
 
-On Streamlit Community Cloud, `ffmpeg` is installed through `packages.txt`.
+On Streamlit Community Cloud, `ffmpeg` and `deno` are installed through
+`packages.txt`.
 
 For local macOS installs from python.org, run the bundled certificate installer
 once if Whisper fails to download its model with an SSL certificate error:
@@ -51,10 +53,10 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-Install `ffmpeg` locally if it is not already installed:
+Install system dependencies locally if they are not already installed:
 
 ```bash
-brew install ffmpeg
+brew install ffmpeg deno
 ```
 
 ## Run
@@ -89,7 +91,9 @@ https://www.youtube.com/watch?v=VXFkjxPvqfU
 - The first Whisper transcription downloads the `base` model, which is about
   139 MB. Larger Whisper models download more data and run more slowly.
 - YouTube extraction can break when YouTube changes its internals. Keep
-  `yt-dlp` updated when downloads or metadata extraction start failing.
+  `yt-dlp` updated when downloads or metadata extraction start failing. `deno`
+  gives `yt-dlp` the JavaScript runtime it expects for some YouTube extraction
+  paths.
 - Some cloud providers may be blocked or rate limited by YouTube for transcript
   access. In those cases the app falls back to Whisper when audio download is
   still available.
