@@ -3,11 +3,15 @@ from tinytag import TinyTag
 
 
 class Audio2text:
-    def __init__(self) -> None:
-        pass
+    _models = {}
+
+    def __init__(self, *, model_name: str = "base") -> None:
+        self.model_name = model_name
 
     def generate_transcript(self, *, audio_file: str):
-        model = whisper.load_model("base")
+        if self.model_name not in self._models:
+            self._models[self.model_name] = whisper.load_model(self.model_name)
+        model = self._models[self.model_name]
         return model.transcribe(audio_file)
 
     def mapping_content_and_timestamp_from_transcript(

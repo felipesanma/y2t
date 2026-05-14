@@ -7,6 +7,17 @@ The app first tries to read an existing YouTube transcript with
 downloads the audio with `yt-dlp` and transcribes it locally with OpenAI
 Whisper.
 
+## Features
+
+- Automatic flow: try YouTube captions first, then fall back to Whisper
+- Optional modes for captions-only or forced Whisper transcription
+- Caption language preference controls
+- Whisper model size selector
+- Result tabs for transcript, timestamp chunks, and metadata
+- Copy transcript button
+- Transcript exports as TXT, JSON, SRT, VTT, and Markdown
+- Friendlier error messages with stack traces hidden behind advanced details
+
 ## Requirements
 
 - Python 3.10 or newer
@@ -64,10 +75,19 @@ Try a sample video:
 https://www.youtube.com/watch?v=VXFkjxPvqfU
 ```
 
+## Using the App
+
+1. Paste a YouTube video URL.
+2. Choose the transcription mode in the sidebar.
+3. Choose preferred caption languages.
+4. Choose a Whisper model if Whisper might be used.
+5. Click **Get Transcription**.
+6. Review the transcript, copy it, or export it from the transcript tab.
+
 ## Notes
 
 - The first Whisper transcription downloads the `base` model, which is about
-  139 MB.
+  139 MB. Larger Whisper models download more data and run more slowly.
 - YouTube extraction can break when YouTube changes its internals. Keep
   `yt-dlp` updated when downloads or metadata extraction start failing.
 - Some cloud providers may be blocked or rate limited by YouTube for transcript
